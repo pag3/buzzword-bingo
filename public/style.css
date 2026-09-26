@@ -83,6 +83,21 @@ button:focus-visible {
   padding: 10px 20px;
 }
 
+/* New Board waiting for its second press */
+.new-board.confirming {
+  background-color: #fff3e0;
+  border: 2px solid #e65100;
+  border-radius: 4px;
+  color: #bf360c;
+  font-weight: bold;
+}
+
+#message .confirm-hint {
+  font-size: 0.7em;
+  font-weight: normal;
+  color: #bf360c;
+}
+
 #message {
   margin-top: 20px;
   min-height: 1.6em;
@@ -135,5 +150,15 @@ button:focus-visible {
 
   button:focus-visible {
     outline-color: #90caf9;
+  }
+
+  .new-board.confirming {
+    background-color: #3e2723;
+    border-color: #ffb74d;
+    color: #ffcc80;
+  }
+
+  #message .confirm-hint {
+    color: #ffcc80;
   }
 }

@@ -1,23 +1,67 @@
-const { useState } = React;
+const { useState, useEffect } = React;
 const h = React.createElement;
-const { generateBoard, winningLines, bingoMessage, initialMarked, isFree } = BingoLogic;
+const {
+  winningLines, bingoMessage, isFree, needsResetConfirmation, newGame, parseSavedGame
+} = BingoLogic;
+
+// The current board is saved in localStorage so a reload, or the OS closing
+// the app in the background, doesn't lose progress mid-meeting. Storage can be
+// unavailable (private browsing, blocked site data), so failures are ignored
+// and the game simply isn't saved.
+const STORAGE_KEY = 'buzzword-bingo:game';
+
+// How long "New Board" waits for the second press before going back to normal.
+const CONFIRM_MS = 3000;
+
+function loadGame() {
+  try {
+    return parseSavedGame(localStorage.getItem(STORAGE_KEY)) || newGame();
+  } catch {
+    return newGame();
+  }
+}
+
+function saveGame(game) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
+  } catch {
+    // Not saved; the game still works.
+  }
+}
 
 function BingoGame() {
-  const [board, setBoard] = useState(generateBoard);
-  const [marked, setMarked] = useState(initialMarked);
+  const [game, setGame] = useState(loadGame);
+  const { board, marked } = game;
+
+  // Starting over mid-game takes two presses of New Board, so a stray tap
+  // can't wipe progress that now survives reloads.
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => saveGame(game), [game]);
+
+  useEffect(() => {
+    if (!confirming) return undefined;
+    const timer = setTimeout(() => setConfirming(false), CONFIRM_MS);
+    return () => clearTimeout(timer);
+  }, [confirming]);
 
   function toggle(i, j) {
     if (isFree(i, j)) return; // FREE square stays marked
-    setMarked(prev => {
-      const next = prev.map(row => row.slice());
+    setConfirming(false);
+    setGame(prev => {
+      const next = prev.marked.map(row => row.slice());
       next[i][j] = !next[i][j];
-      return next;
+      return { board: prev.board, marked: next };
     });
   }
 
   function reset() {
-    setBoard(generateBoard());
-    setMarked(initialMarked());
+    if (!confirming && needsResetConfirmation(marked)) {
+      setConfirming(true);
+      return;
+    }
+    setConfirming(false);
+    setGame(newGame());
   }
 
   const lines = winningLines(marked);
@@ -45,11 +89,19 @@ function BingoGame() {
         })
       )
     ),
-    h('button', { type: 'button', className: 'new-board', onClick: reset }, 'New Board'),
+    h('button', {
+      type: 'button',
+      className: 'new-board' + (confirming ? ' confirming' : ''),
+      onClick: reset
+    }, confirming ? 'Press again for a new board' : 'New Board'),
     // The inner span is keyed on the line count so its pop animation replays
-    // for each new line, while #message itself stays in place.
+    // for each new line, while #message itself stays in place. While New Board
+    // is waiting for its second press (never during a Bingo), the status
+    // explains what it will do, which also announces it to screen readers.
     h('div', { id: 'message', role: 'status' },
-      lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length)))
+      confirming
+        ? h('span', { className: 'confirm-hint' }, 'Your marked squares will be cleared.')
+        : lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length)))
   );
 }
 

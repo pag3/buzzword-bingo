@@ -90,8 +90,49 @@
     );
   }
 
+  // Whether starting a new board would throw away progress worth asking about:
+  // at least one square marked besides FREE, and no Bingo yet. After a Bingo
+  // the game is effectively over, so starting over needs no confirmation.
+  function needsResetConfirmation(marked) {
+    const anyMarked = marked.some((row, i) => row.some((cell, j) => cell && !isFree(i, j)));
+    return anyMarked && winningLines(marked).length === 0;
+  }
+
+  function newGame() {
+    return { board: generateBoard(), marked: initialMarked() };
+  }
+
+  function isGrid(value, isCell) {
+    return Array.isArray(value) && value.length === SIZE &&
+      value.every(row => Array.isArray(row) && row.length === SIZE && row.every(isCell));
+  }
+
+  // Turns saved JSON back into a game, or returns null if it is missing,
+  // corrupt, or no longer valid (for example, it uses a word that has since
+  // been removed from `words`).
+  function parseSavedGame(json, words = BUZZWORDS) {
+    let saved;
+    try {
+      saved = JSON.parse(json);
+    } catch {
+      return null;
+    }
+    if (!saved || !isGrid(saved.board, cell => typeof cell === 'string') ||
+        !isGrid(saved.marked, cell => typeof cell === 'boolean')) {
+      return null;
+    }
+    const { board, marked } = saved;
+    const valid = new Set(words);
+    const cells = board.flat().filter((_, k) => !isFree(Math.floor(k / SIZE), k % SIZE));
+    if (board[CENTER][CENTER] !== FREE || !marked[CENTER][CENTER] ||
+        !cells.every(word => valid.has(word)) || new Set(cells).size !== cells.length) {
+      return null;
+    }
+    return { board, marked };
+  }
+
   return {
     SIZE, FREE, BUZZWORDS, shuffle, isFree, generateBoard, winningLines, checkBingo,
-    bingoMessage, initialMarked
+    bingoMessage, initialMarked, needsResetConfirmation, newGame, parseSavedGame
   };
 });

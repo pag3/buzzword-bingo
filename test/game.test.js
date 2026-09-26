@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
   SIZE, FREE, BUZZWORDS, shuffle, generateBoard, winningLines, checkBingo, bingoMessage,
-  initialMarked
+  initialMarked, needsResetConfirmation, newGame, parseSavedGame
 } = require('../public/game.js');
 
 // A board where only the given [row, column] squares (plus FREE) are marked.
@@ -150,4 +150,72 @@ test('bingoMessage names the number of lines', () => {
   assert.equal(bingoMessage(2), 'Double Bingo!');
   assert.equal(bingoMessage(3), 'Triple Bingo!');
   assert.equal(bingoMessage(12), '12× Bingo!');
+});
+
+test('newGame starts with a fresh board and only FREE marked', () => {
+  const game = newGame();
+  assert.equal(game.board[2][2], FREE);
+  assert.deepEqual(game.marked, initialMarked());
+});
+
+test('a saved game round-trips through JSON', () => {
+  const game = newGame();
+  game.marked[0][3] = true;
+  game.marked[4][1] = true;
+  assert.deepEqual(parseSavedGame(JSON.stringify(game)), game);
+});
+
+test('missing or corrupt saved data is rejected', () => {
+  for (const json of [null, '', 'not json', 'null', '42', '[]', '{}', '{"board":[]}']) {
+    assert.equal(parseSavedGame(json), null, String(json));
+  }
+});
+
+test('saved games with the wrong shape are rejected', () => {
+  const good = newGame();
+  const variants = {
+    'short board': { ...good, board: good.board.slice(0, 4) },
+    'short row': { ...good, board: good.board.map((row, i) => (i === 0 ? row.slice(1) : row)) },
+    'non-string word': { ...good, board: good.board.map((row, i) => (i === 0 ? [1, ...row.slice(1)] : row)) },
+    'non-boolean mark': { ...good, marked: good.marked.map((row, i) => (i === 0 ? ['yes', ...row.slice(1)] : row)) },
+    'missing marked': { board: good.board }
+  };
+  for (const [name, game] of Object.entries(variants)) {
+    assert.equal(parseSavedGame(JSON.stringify(game)), null, name);
+  }
+});
+
+test('saved games that break the rules are rejected', () => {
+  const noFree = newGame();
+  noFree.board[2][2] = noFree.board[0][0];
+  assert.equal(parseSavedGame(JSON.stringify(noFree)), null, 'FREE not in the centre');
+
+  const freeUnmarked = newGame();
+  freeUnmarked.marked[2][2] = false;
+  assert.equal(parseSavedGame(JSON.stringify(freeUnmarked)), null, 'FREE unmarked');
+
+  const duplicate = newGame();
+  duplicate.board[0][1] = duplicate.board[0][0];
+  assert.equal(parseSavedGame(JSON.stringify(duplicate)), null, 'duplicate word');
+});
+
+test('a saved game using a word no longer in the list is rejected', () => {
+  const game = newGame();
+  const removed = game.board[0][0];
+  assert.ok(parseSavedGame(JSON.stringify(game), BUZZWORDS));
+  assert.equal(parseSavedGame(JSON.stringify(game), BUZZWORDS.filter(w => w !== removed)), null);
+});
+
+test('a new board needs no confirmation when nothing is marked but FREE', () => {
+  assert.equal(needsResetConfirmation(initialMarked()), false);
+});
+
+test('a new board needs confirmation once any square is marked', () => {
+  assert.equal(needsResetConfirmation(markedWith([[0, 0]])), true);
+  assert.equal(needsResetConfirmation(markedWith([[0, 0], [1, 1], [3, 3]])), true);
+});
+
+test('a new board needs no confirmation after a Bingo', () => {
+  assert.equal(needsResetConfirmation(markedWith(range.map(j => [0, j]))), false);
+  assert.equal(needsResetConfirmation(markedWith([...range.map(k => [k, k]), [0, 4]])), false);
 });
