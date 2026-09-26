@@ -37,8 +37,14 @@ h1 {
   text-align: center;
   font-size: clamp(10px, 3vw, 16px);
   overflow-wrap: anywhere;
+  margin: 0;
   padding: 2px;
   border: 1px solid #ccc;
+  border-radius: 0;
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+  line-height: 1.2;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -63,7 +69,17 @@ h1 {
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
 }
 
-button {
+.square[aria-disabled="true"] {
+  cursor: default;
+}
+
+/* Keyboard focus ring (not shown for mouse or touch) */
+button:focus-visible {
+  outline: 3px solid #1565c0;
+  outline-offset: 2px;
+}
+
+.new-board {
   margin-top: 20px;
   padding: 10px 20px;
 }
@@ -116,5 +132,9 @@ button {
 
   #message {
     color: #81c784;
+  }
+
+  button:focus-visible {
+    outline-color: #90caf9;
   }
 }
