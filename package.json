@@ -1,7 +1,7 @@
 {
   "name": "buzzword-bingo",
   "productName": "Buzzword Bingo",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Buzzword Bingo: mark off corporate buzzwords as you hear them in meetings.",
   "author": "Paul A. Gusmorino 3rd",

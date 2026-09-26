@@ -1,15 +1,33 @@
 name: Package apps
 
 # Builds installable packages for every platform. Run it manually from the
-# Actions tab, or push a tag like v1.0.1. Download the results from the run's
-# "Artifacts" section.
+# Actions tab, or push a tag matching the package.json version (e.g. v1.1.0).
+# Download the results from the run's "Artifacts" section.
 on:
   workflow_dispatch:
   push:
     tags: ['v*']
 
 jobs:
+  # A v* tag must match the version the packages will carry, or the stores
+  # would get builds labelled with the wrong version. Fails fast, before the
+  # slow builds start.
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${version}. Tag v${version} instead, or bump the version first."
+            exit 1
+          fi
+          echo "Building version ${version}"
+
   microsoft-store:
+    needs: check-version
     runs-on: windows-latest
     env:
       # Set these under Settings > Secrets and variables > Actions > Variables,
@@ -42,6 +60,7 @@ jobs:
           if-no-files-found: error
 
   macos:
+    needs: check-version
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7
@@ -62,6 +81,7 @@ jobs:
           if-no-files-found: error
 
   linux:
+    needs: check-version
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -87,6 +107,7 @@ jobs:
           if-no-files-found: error
 
   android:
+    needs: check-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
