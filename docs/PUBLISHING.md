@@ -67,7 +67,7 @@ The *Package apps* workflow also produces an unsigned debug APK you can install 
 
 ## Other desktop platforms (optional)
 
-- **macOS:** `npm run dist:desktop` on a Mac (or the CI workflow) produces a `.dmg` of a few MB. Unsigned builds show a Gatekeeper warning; signing and notarising need the Apple Developer Program. Publishing to the Mac App Store is possible with Tauri but needs extra Apple certificates and provisioning profiles.
+- **macOS:** `npm run dist:desktop` on a Mac (or the CI workflow) produces a `.dmg` of a few MB. The build is ad-hoc signed (`bundle.macOS.signingIdentity: "-"` in `src-tauri/tauri.conf.json`), so on first launch macOS says it can't verify the developer; open it via **System Settings → Privacy & Security → Open Anyway**. Removing that warning needs Developer ID signing and notarisation, which need the Apple Developer Program. Publishing to the Mac App Store is possible with Tauri but needs extra Apple certificates and provisioning profiles.
 - **Linux:** the `.AppImage` runs as-is and the `.deb` installs on Debian and Ubuntu. Tauri can also produce `.rpm`; Snap and Flatpak need separate packaging files.
 
 ## Keeping versions in sync
