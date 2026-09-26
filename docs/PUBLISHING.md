@@ -72,8 +72,17 @@ The *Package apps* workflow also produces an unsigned debug APK you can install 
 
 ## Keeping versions in sync
 
-The app version lives in three places. Bump all of them for a release:
+`package.json` holds the app version. Bump every one of these for a release:
 
-- `package.json` → `version` (desktop and Microsoft Store, via `src-tauri/tauri.conf.json`)
+- `package.json` → `version` (desktop and Microsoft Store, via `src-tauri/tauri.conf.json`). Use `npm version X.Y.Z --no-git-tag-version`, which also updates `package-lock.json`.
+- `src-tauri/Cargo.toml` → `version`, and the `buzzword-bingo` entry in `src-tauri/Cargo.lock`
 - `android/app/build.gradle` → `versionCode` (integer, +1 each release) and `versionName`
-- the Xcode project → *Version* and *Build*
+- the Xcode project → *Version* (`MARKETING_VERSION`) and *Build* (`CURRENT_PROJECT_VERSION`, kept equal to the Android `versionCode`)
+
+`npm test` checks that all of these agree (`test/version.test.js`), so CI fails if one is missed.
+
+## Releasing
+
+1. Bump the versions as above in a pull request, and merge it.
+2. Tag the merge commit on `main` with `v` plus the version (for example `v1.1.0`) and push the tag. The **Package apps** workflow starts automatically, and its first step fails fast if the tag doesn't match `package.json`.
+3. When the run finishes, download each platform's package from the run's **Artifacts** section and submit them as described above.
