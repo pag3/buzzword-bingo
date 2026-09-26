@@ -17,7 +17,20 @@
     'AI', 'Big Data', 'Cloud', 'Agile', 'Low-Hanging Fruit',
     'Paradigm', 'KPI', 'Deep Dive', 'Ecosystem', 'Lean',
     'Pivot', 'Scalable', 'Touch Base', 'Bandwidth', 'Bleeding Edge',
-    'Circle Back', 'Pain Point', 'Growth Hacking', 'Granular', 'Win-Win'
+    'Circle Back', 'Pain Point', 'Growth Hacking', 'Granular', 'Win-Win',
+    'Move the Needle', 'Deliverables', 'Stakeholder', 'Alignment', 'Actionable',
+    'Best Practice', 'Boil the Ocean', 'Core Competency', 'Double-Click', 'Drill Down',
+    'Empower', 'Game Changer', 'Holistic', 'Ideate', 'Mindshare',
+    'North Star', 'Bottleneck', 'Onboarding', 'Optics', 'Evergreen',
+    'Parking Lot', 'Ping Me', 'Quick Win', 'Reach Out', 'Robust',
+    'ROI', 'Blue Sky', 'Seamless', 'Secret Sauce', 'Silo',
+    'Streamline', 'Take It Offline', 'Thought Leader', 'Unpack', 'Value Add',
+    'Moving Forward', 'Hard Stop', 'Heavy Lifting', 'Level Set', 'Deck',
+    'Q4', 'Roadmap', 'Sprint', 'MVP', 'Tiger Team',
+    'Net-Net', 'Table Stakes', 'Bake In', 'Buy-In', 'Wheelhouse',
+    'Headwinds', 'Tailwinds', 'Learnings', 'Swim Lane', 'Hockey Stick',
+    'Cadence', 'Hyperscale', 'Omnichannel', 'Mission-Critical', 'Next Level',
+    'Out of Pocket', 'Rockstar', 'Sunset', 'Customer-Centric', 'Guardrails'
   ];
 
   function shuffle(array, random = Math.random) {

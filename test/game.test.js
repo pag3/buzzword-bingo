@@ -80,6 +80,30 @@ test('BUZZWORDS has enough unique words to fill a board', () => {
   assert.ok(BUZZWORDS.length >= SIZE * SIZE - 1);
 });
 
+test('BUZZWORDS is large enough that boards vary', () => {
+  // Each board uses 24 words, so a list several times that size means two
+  // boards in a row share only a fraction of their words.
+  assert.ok(BUZZWORDS.length >= 75, `only ${BUZZWORDS.length} buzzwords`);
+});
+
+test('BUZZWORDS has no near-duplicates that differ only in case', () => {
+  const lower = BUZZWORDS.map(word => word.toLowerCase());
+  assert.equal(new Set(lower).size, lower.length);
+});
+
+test('every buzzword is short enough to fit in a square', () => {
+  for (const word of BUZZWORDS) assert.ok(word.length <= 20, word);
+});
+
+test('two boards from different random sequences share fewer than half their words', () => {
+  // Deterministic sources so the test can't flake.
+  const lcg = seed => () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const a = new Set(generateBoard(BUZZWORDS, lcg(1)).flat());
+  const b = generateBoard(BUZZWORDS, lcg(2)).flat();
+  const shared = b.filter(word => a.has(word)).length;
+  assert.ok(shared <= 12, `boards share ${shared} of 25 squares`);
+});
+
 test('shuffle returns a permutation and leaves the input unchanged', () => {
   const input = [1, 2, 3, 4, 5, 6];
   const copy = input.slice();
