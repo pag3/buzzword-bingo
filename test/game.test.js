@@ -1,7 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  SIZE, FREE, BUZZWORDS, shuffle, generateBoard, checkBingo, initialMarked
+  SIZE, FREE, BUZZWORDS, shuffle, generateBoard, winningLines, checkBingo, bingoMessage,
+  initialMarked
 } = require('../public/game.js');
 
 // A board where only the given [row, column] squares (plus FREE) are marked.
@@ -91,4 +92,38 @@ test('shuffle returns a permutation and leaves the input unchanged', () => {
 test('shuffle follows the supplied random source', () => {
   // random() === 0 always swaps with index 0, rotating the array left by one.
   assert.deepEqual(shuffle([1, 2, 3, 4], () => 0), [2, 3, 4, 1]);
+});
+
+test('winningLines is empty when nothing is complete', () => {
+  assert.deepEqual(winningLines(initialMarked()), []);
+  assert.deepEqual(winningLines(markedWith([[0, 0], [0, 1], [0, 2], [0, 3]])), []);
+});
+
+test('winningLines returns the cells of a completed row, column or diagonal', () => {
+  assert.deepEqual(winningLines(markedWith(range.map(j => [1, j]))), [range.map(j => [1, j])]);
+  assert.deepEqual(winningLines(markedWith(range.map(i => [i, 3]))), [range.map(i => [i, 3])]);
+  assert.deepEqual(winningLines(markedWith(range.map(k => [k, SIZE - 1 - k]))),
+    [range.map(k => [k, SIZE - 1 - k])]);
+});
+
+test('winningLines reports every line when several are complete', () => {
+  // The middle row and middle column cross at FREE.
+  const lines = winningLines(markedWith([...range.map(j => [2, j]), ...range.map(i => [i, 2])]));
+  assert.deepEqual(lines, [range.map(j => [2, j]), range.map(i => [i, 2])]);
+
+  const all = initialMarked().map(row => row.map(() => true));
+  assert.equal(winningLines(all).length, 2 * SIZE + 2);
+});
+
+test('checkBingo agrees with winningLines', () => {
+  const cases = [initialMarked(), markedWith(range.map(k => [k, k])), markedWith([[0, 0], [4, 4]])];
+  for (const marked of cases) assert.equal(checkBingo(marked), winningLines(marked).length > 0);
+});
+
+test('bingoMessage names the number of lines', () => {
+  assert.equal(bingoMessage(0), '');
+  assert.equal(bingoMessage(1), 'Bingo!');
+  assert.equal(bingoMessage(2), 'Double Bingo!');
+  assert.equal(bingoMessage(3), 'Triple Bingo!');
+  assert.equal(bingoMessage(12), '12× Bingo!');
 });

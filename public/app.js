@@ -1,6 +1,6 @@
 const { useState } = React;
 const h = React.createElement;
-const { generateBoard, checkBingo, initialMarked, isFree } = BingoLogic;
+const { generateBoard, winningLines, bingoMessage, initialMarked, isFree } = BingoLogic;
 
 function BingoGame() {
   const [board, setBoard] = useState(generateBoard);
@@ -20,6 +20,9 @@ function BingoGame() {
     setMarked(initialMarked());
   }
 
+  const lines = winningLines(marked);
+  const winning = new Set(lines.flat().map(([i, j]) => `${i}-${j}`));
+
   return h('div', null,
     h('h1', null, 'Buzzword Bingo'),
     h('div', { className: 'bingo-board' },
@@ -27,14 +30,18 @@ function BingoGame() {
         row.map((word, j) =>
           h('div', {
             key: `${i}-${j}`,
-            className: 'square' + (marked[i][j] ? ' selected' : ''),
+            className: 'square' + (marked[i][j] ? ' selected' : '') +
+              (winning.has(`${i}-${j}`) ? ' winning' : ''),
             onClick: () => toggle(i, j)
           }, word)
         )
       )
     ),
     h('button', { onClick: reset }, 'New Board'),
-    h('div', { id: 'message' }, checkBingo(marked) ? 'Bingo!' : '')
+    // The inner span is keyed on the line count so its pop animation replays
+    // for each new line, while #message itself stays in place.
+    h('div', { id: 'message' },
+      lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length)))
   );
 }
 

@@ -48,6 +48,21 @@ h1 {
   background-color: #90ee90;
 }
 
+/* Squares in a completed row, column or diagonal */
+.square.winning {
+  background-color: #2e7d32;
+  border-color: #1b5e20;
+  color: #fff;
+  font-weight: bold;
+  animation: win-pulse 0.6s ease-out;
+}
+
+@keyframes win-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.45); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+}
+
 button {
   margin-top: 20px;
   padding: 10px 20px;
@@ -55,8 +70,28 @@ button {
 
 #message {
   margin-top: 20px;
+  min-height: 1.6em;
   font-weight: bold;
+  font-size: 1.4em;
   color: green;
+}
+
+#message .win {
+  display: inline-block;
+  animation: win-pop 0.5s ease-out;
+}
+
+@keyframes win-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .square.winning,
+  #message .win {
+    animation: none;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -71,6 +106,12 @@ button {
 
   .square.selected {
     background-color: #2e7d32;
+  }
+
+  .square.winning {
+    background-color: #66bb6a;
+    border-color: #a5d6a7;
+    color: #0b2e0d;
   }
 
   #message {
