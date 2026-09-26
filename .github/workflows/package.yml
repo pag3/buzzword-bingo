@@ -18,8 +18,8 @@ jobs:
       MS_STORE_PUBLISHER: ${{ vars.MS_STORE_PUBLISHER }}
       MS_STORE_PUBLISHER_DISPLAY_NAME: ${{ vars.MS_STORE_PUBLISHER_DISPLAY_NAME }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -35,7 +35,7 @@ jobs:
         run: npm run store:identity
       # Unsigned .msixbundle (x64 + arm64). The Microsoft Store signs it.
       - run: npm run dist:store
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: buzzword-bingo-microsoft-store
           path: src-tauri/target/msix/*
@@ -44,8 +44,8 @@ jobs:
   macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -55,7 +55,7 @@ jobs:
           workspaces: src-tauri
       - run: npm ci
       - run: npm run dist:desktop -- --bundles dmg
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: buzzword-bingo-macos
           path: src-tauri/target/release/bundle/dmg/*.dmg
@@ -64,11 +64,11 @@ jobs:
   linux:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -78,7 +78,7 @@ jobs:
           workspaces: src-tauri
       - run: npm ci
       - run: npm run dist:desktop -- --bundles appimage,deb
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: buzzword-bingo-linux
           path: |
@@ -89,12 +89,12 @@ jobs:
   android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 21
@@ -104,7 +104,7 @@ jobs:
       # bundle (.aab) for Google Play from Android Studio (see docs/PUBLISHING.md).
       - run: ./gradlew assembleDebug
         working-directory: android
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: buzzword-bingo-android-debug
           path: android/app/build/outputs/apk/debug/*.apk
