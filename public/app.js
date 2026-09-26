@@ -1,23 +1,46 @@
-const { useState } = React;
+const { useState, useEffect } = React;
 const h = React.createElement;
-const { generateBoard, checkBingo, initialMarked, isFree } = BingoLogic;
+const { checkBingo, isFree, newGame, parseSavedGame } = BingoLogic;
+
+// The current board is saved in localStorage so a reload, or the OS closing
+// the app in the background, doesn't lose progress mid-meeting. Storage can be
+// unavailable (private browsing, blocked site data), so failures are ignored
+// and the game simply isn't saved.
+const STORAGE_KEY = 'buzzword-bingo:game';
+
+function loadGame() {
+  try {
+    return parseSavedGame(localStorage.getItem(STORAGE_KEY)) || newGame();
+  } catch {
+    return newGame();
+  }
+}
+
+function saveGame(game) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(game));
+  } catch {
+    // Not saved; the game still works.
+  }
+}
 
 function BingoGame() {
-  const [board, setBoard] = useState(generateBoard);
-  const [marked, setMarked] = useState(initialMarked);
+  const [game, setGame] = useState(loadGame);
+  const { board, marked } = game;
+
+  useEffect(() => saveGame(game), [game]);
 
   function toggle(i, j) {
     if (isFree(i, j)) return; // FREE square stays marked
-    setMarked(prev => {
-      const next = prev.map(row => row.slice());
+    setGame(prev => {
+      const next = prev.marked.map(row => row.slice());
       next[i][j] = !next[i][j];
-      return next;
+      return { board: prev.board, marked: next };
     });
   }
 
   function reset() {
-    setBoard(generateBoard());
-    setMarked(initialMarked());
+    setGame(newGame());
   }
 
   return h('div', null,
