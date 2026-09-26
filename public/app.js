@@ -1,6 +1,6 @@
 const { useState, useEffect } = React;
 const h = React.createElement;
-const { checkBingo, isFree, newGame, parseSavedGame } = BingoLogic;
+const { winningLines, bingoMessage, isFree, newGame, parseSavedGame } = BingoLogic;
 
 // The current board is saved in localStorage so a reload, or the OS closing
 // the app in the background, doesn't lose progress mid-meeting. Storage can be
@@ -43,21 +43,36 @@ function BingoGame() {
     setGame(newGame());
   }
 
+  const lines = winningLines(marked);
+  const winning = new Set(lines.flat().map(([i, j]) => `${i}-${j}`));
+
   return h('div', null,
     h('h1', null, 'Buzzword Bingo'),
-    h('div', { className: 'bingo-board' },
+    h('div', { className: 'bingo-board', role: 'group', 'aria-label': 'Bingo board' },
       board.map((row, i) =>
-        row.map((word, j) =>
-          h('div', {
+        row.map((word, j) => {
+          const free = isFree(i, j);
+          return h('button', {
             key: `${i}-${j}`,
-            className: 'square' + (marked[i][j] ? ' selected' : ''),
+            type: 'button',
+            className: 'square' + (marked[i][j] ? ' selected' : '') +
+              (winning.has(`${i}-${j}`) ? ' winning' : ''),
+            'aria-pressed': marked[i][j],
+            // The FREE square is always marked, so it can't be toggled. It
+            // stays focusable (unlike `disabled`) so screen readers still
+            // announce it as part of the board.
+            'aria-disabled': free || undefined,
+            'aria-label': free ? 'Free square, always marked' : undefined,
             onClick: () => toggle(i, j)
-          }, word)
-        )
+          }, word);
+        })
       )
     ),
-    h('button', { onClick: reset }, 'New Board'),
-    h('div', { id: 'message' }, checkBingo(marked) ? 'Bingo!' : '')
+    h('button', { type: 'button', className: 'new-board', onClick: reset }, 'New Board'),
+    // The inner span is keyed on the line count so its pop animation replays
+    // for each new line, while #message itself stays in place.
+    h('div', { id: 'message', role: 'status' },
+      lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length)))
   );
 }
 

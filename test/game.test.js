@@ -1,8 +1,8 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
-  SIZE, FREE, BUZZWORDS, shuffle, generateBoard, checkBingo, initialMarked,
-  newGame, parseSavedGame
+  SIZE, FREE, BUZZWORDS, shuffle, generateBoard, winningLines, checkBingo, bingoMessage,
+  initialMarked, newGame, parseSavedGame
 } = require('../public/game.js');
 
 // A board where only the given [row, column] squares (plus FREE) are marked.
@@ -81,6 +81,30 @@ test('BUZZWORDS has enough unique words to fill a board', () => {
   assert.ok(BUZZWORDS.length >= SIZE * SIZE - 1);
 });
 
+test('BUZZWORDS is large enough that boards vary', () => {
+  // Each board uses 24 words, so a list several times that size means two
+  // boards in a row share only a fraction of their words.
+  assert.ok(BUZZWORDS.length >= 75, `only ${BUZZWORDS.length} buzzwords`);
+});
+
+test('BUZZWORDS has no near-duplicates that differ only in case', () => {
+  const lower = BUZZWORDS.map(word => word.toLowerCase());
+  assert.equal(new Set(lower).size, lower.length);
+});
+
+test('every buzzword is short enough to fit in a square', () => {
+  for (const word of BUZZWORDS) assert.ok(word.length <= 20, word);
+});
+
+test('two boards from different random sequences share fewer than half their words', () => {
+  // Deterministic sources so the test can't flake.
+  const lcg = seed => () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  const a = new Set(generateBoard(BUZZWORDS, lcg(1)).flat());
+  const b = generateBoard(BUZZWORDS, lcg(2)).flat();
+  const shared = b.filter(word => a.has(word)).length;
+  assert.ok(shared <= 12, `boards share ${shared} of 25 squares`);
+});
+
 test('shuffle returns a permutation and leaves the input unchanged', () => {
   const input = [1, 2, 3, 4, 5, 6];
   const copy = input.slice();
@@ -92,6 +116,40 @@ test('shuffle returns a permutation and leaves the input unchanged', () => {
 test('shuffle follows the supplied random source', () => {
   // random() === 0 always swaps with index 0, rotating the array left by one.
   assert.deepEqual(shuffle([1, 2, 3, 4], () => 0), [2, 3, 4, 1]);
+});
+
+test('winningLines is empty when nothing is complete', () => {
+  assert.deepEqual(winningLines(initialMarked()), []);
+  assert.deepEqual(winningLines(markedWith([[0, 0], [0, 1], [0, 2], [0, 3]])), []);
+});
+
+test('winningLines returns the cells of a completed row, column or diagonal', () => {
+  assert.deepEqual(winningLines(markedWith(range.map(j => [1, j]))), [range.map(j => [1, j])]);
+  assert.deepEqual(winningLines(markedWith(range.map(i => [i, 3]))), [range.map(i => [i, 3])]);
+  assert.deepEqual(winningLines(markedWith(range.map(k => [k, SIZE - 1 - k]))),
+    [range.map(k => [k, SIZE - 1 - k])]);
+});
+
+test('winningLines reports every line when several are complete', () => {
+  // The middle row and middle column cross at FREE.
+  const lines = winningLines(markedWith([...range.map(j => [2, j]), ...range.map(i => [i, 2])]));
+  assert.deepEqual(lines, [range.map(j => [2, j]), range.map(i => [i, 2])]);
+
+  const all = initialMarked().map(row => row.map(() => true));
+  assert.equal(winningLines(all).length, 2 * SIZE + 2);
+});
+
+test('checkBingo agrees with winningLines', () => {
+  const cases = [initialMarked(), markedWith(range.map(k => [k, k])), markedWith([[0, 0], [4, 4]])];
+  for (const marked of cases) assert.equal(checkBingo(marked), winningLines(marked).length > 0);
+});
+
+test('bingoMessage names the number of lines', () => {
+  assert.equal(bingoMessage(0), '');
+  assert.equal(bingoMessage(1), 'Bingo!');
+  assert.equal(bingoMessage(2), 'Double Bingo!');
+  assert.equal(bingoMessage(3), 'Triple Bingo!');
+  assert.equal(bingoMessage(12), '12× Bingo!');
 });
 
 test('newGame starts with a fresh board and only FREE marked', () => {

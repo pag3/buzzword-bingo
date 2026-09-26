@@ -17,7 +17,20 @@
     'AI', 'Big Data', 'Cloud', 'Agile', 'Low-Hanging Fruit',
     'Paradigm', 'KPI', 'Deep Dive', 'Ecosystem', 'Lean',
     'Pivot', 'Scalable', 'Touch Base', 'Bandwidth', 'Bleeding Edge',
-    'Circle Back', 'Pain Point', 'Growth Hacking', 'Granular', 'Win-Win'
+    'Circle Back', 'Pain Point', 'Growth Hacking', 'Granular', 'Win-Win',
+    'Move the Needle', 'Deliverables', 'Stakeholder', 'Alignment', 'Actionable',
+    'Best Practice', 'Boil the Ocean', 'Core Competency', 'Double-Click', 'Drill Down',
+    'Empower', 'Game Changer', 'Holistic', 'Ideate', 'Mindshare',
+    'North Star', 'Bottleneck', 'Onboarding', 'Optics', 'Evergreen',
+    'Parking Lot', 'Ping Me', 'Quick Win', 'Reach Out', 'Robust',
+    'ROI', 'Blue Sky', 'Seamless', 'Secret Sauce', 'Silo',
+    'Streamline', 'Take It Offline', 'Thought Leader', 'Unpack', 'Value Add',
+    'Moving Forward', 'Hard Stop', 'Heavy Lifting', 'Level Set', 'Deck',
+    'Q4', 'Roadmap', 'Sprint', 'MVP', 'Tiger Team',
+    'Net-Net', 'Table Stakes', 'Bake In', 'Buy-In', 'Wheelhouse',
+    'Headwinds', 'Tailwinds', 'Learnings', 'Swim Lane', 'Hockey Stick',
+    'Cadence', 'Hyperscale', 'Omnichannel', 'Mission-Critical', 'Next Level',
+    'Out of Pocket', 'Rockstar', 'Sunset', 'Customer-Centric', 'Guardrails'
   ];
 
   function shuffle(array, random = Math.random) {
@@ -47,14 +60,28 @@
     return board;
   }
 
+  // Every complete line, as a list of [row, column] cells: each row, each
+  // column, then the two diagonals.
+  function winningLines(marked) {
+    const range = Array.from({ length: SIZE }, (_, k) => k);
+    const lines = [
+      ...range.map(i => range.map(j => [i, j])),
+      ...range.map(j => range.map(i => [i, j])),
+      range.map(k => [k, k]),
+      range.map(k => [k, SIZE - 1 - k])
+    ];
+    return lines.filter(line => line.every(([i, j]) => marked[i][j]));
+  }
+
   function checkBingo(marked) {
-    for (let i = 0; i < SIZE; i++) {
-      if (marked[i].every(Boolean)) return true;
-      if (marked.every(row => row[i])) return true;
-    }
-    if (marked.every((row, i) => row[i])) return true;
-    if (marked.every((row, i) => row[SIZE - 1 - i])) return true;
-    return false;
+    return winningLines(marked).length > 0;
+  }
+
+  // The message shown for a given number of complete lines.
+  function bingoMessage(lineCount) {
+    if (lineCount === 0) return '';
+    const names = ['Bingo!', 'Double Bingo!', 'Triple Bingo!'];
+    return names[lineCount - 1] || `${lineCount}× Bingo!`;
   }
 
   function initialMarked() {
@@ -97,7 +124,7 @@
   }
 
   return {
-    SIZE, FREE, BUZZWORDS, shuffle, isFree, generateBoard, checkBingo, initialMarked,
-    newGame, parseSavedGame
+    SIZE, FREE, BUZZWORDS, shuffle, isFree, generateBoard, winningLines, checkBingo,
+    bingoMessage, initialMarked, newGame, parseSavedGame
   };
 });

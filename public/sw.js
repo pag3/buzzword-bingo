@@ -1,21 +1,9 @@
 // Cache-first service worker so the web version works offline after the first
-// visit. Bump CACHE_VERSION whenever any file below changes.
-const CACHE_VERSION = 'buzzword-bingo-v2';
-const ASSETS = [
-  './',
-  'index.html',
-  'game.js',
-  'app.js',
-  'style.css',
-  'manifest.webmanifest',
-  'privacy.html',
-  'icons/icon.svg',
-  'icons/favicon-32.png',
-  'icons/icon-192.png',
-  'icons/icon-512.png',
-  'vendor/react/react.production.min.js',
-  'vendor/react-dom/react-dom.production.min.js'
-];
+// visit. `npm run build` fills in both constants below: ASSETS lists every file
+// in dist/, and CACHE_VERSION is a hash of their contents, so any change to the
+// app gives returning visitors a fresh cache.
+const CACHE_VERSION = 'buzzword-bingo-dev';
+const ASSETS = ['./'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
