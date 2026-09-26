@@ -1,0 +1,45 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Buzzword Bingo",
+  "mainBinaryName": "buzzword-bingo",
+  "version": "../package.json",
+  "identifier": "com.pag3.buzzwordbingo",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3000",
+    "beforeDevCommand": "npm start",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Buzzword Bingo",
+        "width": 640,
+        "height": 780,
+        "minWidth": 360,
+        "minHeight": 560,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "dmg", "appimage", "deb"],
+    "publisher": "Paul A. Gusmorino 3rd",
+    "copyright": "Copyright © Paul A. Gusmorino 3rd",
+    "category": "Game",
+    "shortDescription": "Buzzword Bingo",
+    "longDescription": "Mark off corporate buzzwords as you hear them in meetings. Complete a row, column, or diagonal to win. Works offline, no ads, no tracking.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

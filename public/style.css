@@ -1,0 +1,79 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  /* Respect notches / rounded corners when installed on phones */
+  padding: calc(20px + env(safe-area-inset-top)) 8px calc(20px + env(safe-area-inset-bottom));
+  background-color: #fff;
+  color: #222;
+}
+
+#root > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.bingo-board {
+  /* 100px squares on desktop, shrinking to fit narrow phone screens */
+  --square: min(100px, calc((100vw - 36px) / 5));
+  display: grid;
+  grid-template-columns: repeat(5, var(--square));
+  grid-template-rows: repeat(5, var(--square));
+  gap: 5px;
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: clamp(10px, 3vw, 16px);
+  overflow-wrap: anywhere;
+  padding: 2px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.square.selected {
+  background-color: #90ee90;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 20px;
+}
+
+#message {
+  margin-top: 20px;
+  font-weight: bold;
+  color: green;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+    color: #eee;
+  }
+
+  .square {
+    border-color: #555;
+  }
+
+  .square.selected {
+    background-color: #2e7d32;
+  }
+
+  #message {
+    color: #81c784;
+  }
+}

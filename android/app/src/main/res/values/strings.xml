@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Buzzword Bingo</string>
+    <string name="title_activity_main">Buzzword Bingo</string>
+    <string name="package_name">com.pag3.buzzwordbingo</string>
+    <string name="custom_url_scheme">com.pag3.buzzwordbingo</string>
+</resources>

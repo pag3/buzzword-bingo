@@ -1,0 +1,20 @@
+{
+  "publisher": "CN=00000000-0000-0000-0000-000000000000",
+  "publisherDisplayName": "Paul A. Gusmorino 3rd",
+  "capabilities": {
+    "general": []
+  },
+  "extensions": {
+    "shareTarget": false,
+    "fileAssociations": [],
+    "protocolHandlers": []
+  },
+  "signing": {
+    "pfx": null,
+    "pfxPassword": null
+  },
+  "resourceIndex": {
+    "enabled": false,
+    "keepConfig": false
+  }
+}

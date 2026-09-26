@@ -1,0 +1,45 @@
+{
+  "name": "buzzword-bingo",
+  "productName": "Buzzword Bingo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Buzzword Bingo: mark off corporate buzzwords as you hear them in meetings.",
+  "author": "Paul A. Gusmorino 3rd",
+  "license": "MIT",
+  "homepage": "https://github.com/pag3/buzzword-bingo",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pag3/buzzword-bingo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pag3/buzzword-bingo/issues"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "prestart": "npm run build",
+    "start": "node server.js",
+    "icons": "node scripts/generate-icons.js",
+    "tauri": "tauri",
+    "desktop": "tauri dev",
+    "dist:desktop": "tauri build",
+    "store:identity": "node scripts/set-store-identity.js",
+    "dist:store": "tauri-windows-bundle build --runner npm --arch x64,arm64 --min-windows 10.0.22000.0",
+    "cap:sync": "npm run build && cap sync",
+    "cap:android": "npm run cap:sync && cap open android",
+    "cap:ios": "npm run cap:sync && cap open ios"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/ios": "^8.5.2",
+    "@choochmeque/tauri-windows-bundle": "^0.2.0",
+    "@tauri-apps/cli": "^2.11.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sharp": "^0.35.4"
+  }
+}

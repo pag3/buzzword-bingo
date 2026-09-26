@@ -1,0 +1,111 @@
+name: Package apps
+
+# Builds installable packages for every platform. Run it manually from the
+# Actions tab, or push a tag like v1.0.1. Download the results from the run's
+# "Artifacts" section.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  microsoft-store:
+    runs-on: windows-latest
+    env:
+      # Set these under Settings > Secrets and variables > Actions > Variables,
+      # using the values from Partner Center > Product identity.
+      MS_STORE_IDENTITY_NAME: ${{ vars.MS_STORE_IDENTITY_NAME }}
+      MS_STORE_PUBLISHER: ${{ vars.MS_STORE_PUBLISHER }}
+      MS_STORE_PUBLISHER_DISPLAY_NAME: ${{ vars.MS_STORE_PUBLISHER_DISPLAY_NAME }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc,aarch64-pc-windows-msvc
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - name: Apply Store identity
+        if: env.MS_STORE_IDENTITY_NAME != ''
+        run: npm run store:identity
+      # Unsigned .msixbundle (x64 + arm64). The Microsoft Store signs it.
+      - run: npm run dist:store
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buzzword-bingo-microsoft-store
+          path: src-tauri/target/msix/*
+          if-no-files-found: error
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run dist:desktop -- --bundles dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buzzword-bingo-macos
+          path: src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+
+  linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: npm ci
+      - run: npm run dist:desktop -- --bundles appimage,deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buzzword-bingo-linux
+          path: |
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/deb/*.deb
+          if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run build && npx cap sync android
+      # Unsigned debug APK for testing on a device. Build the signed release
+      # bundle (.aab) for Google Play from Android Studio (see docs/PUBLISHING.md).
+      - run: ./gradlew assembleDebug
+        working-directory: android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: buzzword-bingo-android-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
