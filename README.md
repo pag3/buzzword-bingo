@@ -27,9 +27,13 @@ Every packaged app bundles all of its files, so it works offline from the first 
 npm install
 npm start            # builds dist/ and serves it on http://localhost:3000
 npm run desktop      # runs the desktop app (needs Rust; see below)
+npm test             # unit tests for the game logic
+npm run lint         # ESLint
 ```
 
-The source lives in `public/`. `npm run build` copies it, together with React, into a self-contained `dist/`.
+The source lives in `public/`: the game rules are in `game.js` and the React UI is in `app.js`. `npm run build` copies it, together with React, into a self-contained `dist/`. The project uses Node 24 (see `.nvmrc`); Node 22.13 or later also works.
+
+The **CI** workflow runs lint, tests and a build on every pull request and every push to `main`.
 
 ## Packaging
 

@@ -1,9 +1,10 @@
 // Cache-first service worker so the web version works offline after the first
 // visit. Bump CACHE_VERSION whenever any file below changes.
-const CACHE_VERSION = 'buzzword-bingo-v1';
+const CACHE_VERSION = 'buzzword-bingo-v2';
 const ASSETS = [
   './',
   'index.html',
+  'game.js',
   'app.js',
   'style.css',
   'manifest.webmanifest',

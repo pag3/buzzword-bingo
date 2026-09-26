@@ -14,10 +14,15 @@
   "bugs": {
     "url": "https://github.com/pag3/buzzword-bingo/issues"
   },
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "build": "node scripts/build.js",
     "prestart": "npm run build",
     "start": "node server.js",
+    "test": "node --test",
+    "lint": "eslint .",
     "icons": "node scripts/generate-icons.js",
     "tauri": "tauri",
     "desktop": "tauri dev",
@@ -37,7 +42,10 @@
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
     "@choochmeque/tauri-windows-bundle": "^0.2.0",
+    "@eslint/js": "^10.0.1",
     "@tauri-apps/cli": "^2.11.5",
+    "eslint": "^10.11.0",
+    "globals": "^17.12.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sharp": "^0.35.4"
