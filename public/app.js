@@ -1,6 +1,6 @@
 const { useState } = React;
 const h = React.createElement;
-const { generateBoard, checkBingo, initialMarked, isFree } = BingoLogic;
+const { generateBoard, winningLines, bingoMessage, initialMarked, isFree } = BingoLogic;
 
 function BingoGame() {
   const [board, setBoard] = useState(generateBoard);
@@ -20,6 +20,9 @@ function BingoGame() {
     setMarked(initialMarked());
   }
 
+  const lines = winningLines(marked);
+  const winning = new Set(lines.flat().map(([i, j]) => `${i}-${j}`));
+
   return h('div', null,
     h('h1', null, 'Buzzword Bingo'),
     h('div', { className: 'bingo-board', role: 'group', 'aria-label': 'Bingo board' },
@@ -29,7 +32,8 @@ function BingoGame() {
           return h('button', {
             key: `${i}-${j}`,
             type: 'button',
-            className: 'square' + (marked[i][j] ? ' selected' : ''),
+            className: 'square' + (marked[i][j] ? ' selected' : '') +
+              (winning.has(`${i}-${j}`) ? ' winning' : ''),
             'aria-pressed': marked[i][j],
             // The FREE square is always marked, so it can't be toggled. It
             // stays focusable (unlike `disabled`) so screen readers still
@@ -42,7 +46,10 @@ function BingoGame() {
       )
     ),
     h('button', { type: 'button', className: 'new-board', onClick: reset }, 'New Board'),
-    h('div', { id: 'message', role: 'status' }, checkBingo(marked) ? 'Bingo!' : '')
+    // The inner span is keyed on the line count so its pop animation replays
+    // for each new line, while #message itself stays in place.
+    h('div', { id: 'message', role: 'status' },
+      lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length)))
   );
 }
 
