@@ -22,19 +22,27 @@ function BingoGame() {
 
   return h('div', null,
     h('h1', null, 'Buzzword Bingo'),
-    h('div', { className: 'bingo-board' },
+    h('div', { className: 'bingo-board', role: 'group', 'aria-label': 'Bingo board' },
       board.map((row, i) =>
-        row.map((word, j) =>
-          h('div', {
+        row.map((word, j) => {
+          const free = isFree(i, j);
+          return h('button', {
             key: `${i}-${j}`,
+            type: 'button',
             className: 'square' + (marked[i][j] ? ' selected' : ''),
+            'aria-pressed': marked[i][j],
+            // The FREE square is always marked, so it can't be toggled. It
+            // stays focusable (unlike `disabled`) so screen readers still
+            // announce it as part of the board.
+            'aria-disabled': free || undefined,
+            'aria-label': free ? 'Free square, always marked' : undefined,
             onClick: () => toggle(i, j)
-          }, word)
-        )
+          }, word);
+        })
       )
     ),
-    h('button', { onClick: reset }, 'New Board'),
-    h('div', { id: 'message' }, checkBingo(marked) ? 'Bingo!' : '')
+    h('button', { type: 'button', className: 'new-board', onClick: reset }, 'New Board'),
+    h('div', { id: 'message', role: 'status' }, checkBingo(marked) ? 'Bingo!' : '')
   );
 }
 
