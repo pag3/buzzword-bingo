@@ -2,7 +2,7 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const {
   SIZE, FREE, BUZZWORDS, shuffle, generateBoard, winningLines, checkBingo, bingoMessage,
-  initialMarked, newGame, parseSavedGame
+  initialMarked, needsResetConfirmation, newGame, parseSavedGame
 } = require('../public/game.js');
 
 // A board where only the given [row, column] squares (plus FREE) are marked.
@@ -204,4 +204,18 @@ test('a saved game using a word no longer in the list is rejected', () => {
   const removed = game.board[0][0];
   assert.ok(parseSavedGame(JSON.stringify(game), BUZZWORDS));
   assert.equal(parseSavedGame(JSON.stringify(game), BUZZWORDS.filter(w => w !== removed)), null);
+});
+
+test('a new board needs no confirmation when nothing is marked but FREE', () => {
+  assert.equal(needsResetConfirmation(initialMarked()), false);
+});
+
+test('a new board needs confirmation once any square is marked', () => {
+  assert.equal(needsResetConfirmation(markedWith([[0, 0]])), true);
+  assert.equal(needsResetConfirmation(markedWith([[0, 0], [1, 1], [3, 3]])), true);
+});
+
+test('a new board needs no confirmation after a Bingo', () => {
+  assert.equal(needsResetConfirmation(markedWith(range.map(j => [0, j]))), false);
+  assert.equal(needsResetConfirmation(markedWith([...range.map(k => [k, k]), [0, 4]])), false);
 });

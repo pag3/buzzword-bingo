@@ -90,6 +90,14 @@
     );
   }
 
+  // Whether starting a new board would throw away progress worth asking about:
+  // at least one square marked besides FREE, and no Bingo yet. After a Bingo
+  // the game is effectively over, so starting over needs no confirmation.
+  function needsResetConfirmation(marked) {
+    const anyMarked = marked.some((row, i) => row.some((cell, j) => cell && !isFree(i, j)));
+    return anyMarked && winningLines(marked).length === 0;
+  }
+
   function newGame() {
     return { board: generateBoard(), marked: initialMarked() };
   }
@@ -125,6 +133,6 @@
 
   return {
     SIZE, FREE, BUZZWORDS, shuffle, isFree, generateBoard, winningLines, checkBingo,
-    bingoMessage, initialMarked, newGame, parseSavedGame
+    bingoMessage, initialMarked, needsResetConfirmation, newGame, parseSavedGame
   };
 });
