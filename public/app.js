@@ -26,8 +26,8 @@ const TAGLINES = [
 ];
 
 const COLUMN_LETTERS = ['B', 'I', 'N', 'G', 'O'];
-const CONFETTI_COLORS = ['#ff4f9a', '#ff8a3d', '#ffd23f', '#2ec4b6', '#7b5cff'];
-const CONFETTI_PIECES = 60;
+const CONFETTI_COLORS = ['#ffd633', '#2e7d32', '#66bb6a', '#1e2a44', '#9aa3b5'];
+const CONFETTI_PIECES = 40;
 
 // Randomised confetti pieces. Positions are set as CSS custom properties
 // (through the CSSOM, so the Content Security Policy allows them).
@@ -109,7 +109,7 @@ function BingoGame() {
   return h('div', { className: 'game' },
     h('header', { className: 'masthead' },
       h('h1', null,
-        h('span', { className: 'title-buzz' }, 'Buzzword'), ' ',
+        'Buzzword ',
         h('span', { className: 'title-bingo' }, 'Bingo')),
       h('p', { className: 'tagline' }, tagline)),
     h('div', { className: 'card' },
