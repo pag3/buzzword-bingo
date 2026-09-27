@@ -9,7 +9,7 @@ const sharp = require('sharp');
 
 const root = path.join(__dirname, '..');
 const svg = fs.readFileSync(path.join(root, 'public/icons/icon.svg'));
-const BRAND = '#2e7d32';
+const BRAND = '#1e2a44';
 
 // Square icon scaled to `size`.
 function icon(size, out) {
