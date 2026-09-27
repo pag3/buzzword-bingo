@@ -1,4 +1,4 @@
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo } = React;
 const h = React.createElement;
 const {
   winningLines, bingoMessage, isFree, needsResetConfirmation, newGame, parseSavedGame
@@ -12,6 +12,41 @@ const STORAGE_KEY = 'buzzword-bingo:game';
 
 // How long "New Board" waits for the second press before going back to normal.
 const CONFIRM_MS = 3000;
+
+// A tongue-in-cheek subtitle, picked afresh for each board.
+const TAGLINES = [
+  'Leveraging synergies since Q4.',
+  'Let\u2019s take this offline\u2026 and win.',
+  'Moving the needle, one square at a time.',
+  'Per my last email: mark your squares.',
+  'This meeting could have been a bingo card.',
+  'Circling back to the low-hanging fruit.',
+  'Now with 30% more thought leadership.',
+  'A best-in-class, customer-centric bingo experience.'
+];
+
+const COLUMN_LETTERS = ['B', 'I', 'N', 'G', 'O'];
+const CONFETTI_COLORS = ['#ff4f9a', '#ff8a3d', '#ffd23f', '#2ec4b6', '#7b5cff'];
+const CONFETTI_PIECES = 60;
+
+// Randomised confetti pieces. Positions are set as CSS custom properties
+// (through the CSSOM, so the Content Security Policy allows them).
+function makeConfetti() {
+  return Array.from({ length: CONFETTI_PIECES }, (_, k) => ({
+    '--x': `${Math.random() * 100}vw`,
+    '--drift': `${(Math.random() - 0.5) * 30}vw`,
+    '--spin': `${(Math.random() < 0.5 ? -1 : 1) * (360 + Math.random() * 720)}deg`,
+    '--delay': `${Math.random() * 0.6}s`,
+    '--duration': `${2.2 + Math.random() * 1.6}s`,
+    '--color': CONFETTI_COLORS[k % CONFETTI_COLORS.length]
+  }));
+}
+
+function Confetti() {
+  const pieces = useMemo(makeConfetti, []);
+  return h('div', { className: 'confetti', 'aria-hidden': true },
+    pieces.map((style, k) => h('span', { key: k, style })));
+}
 
 function loadGame() {
   try {
@@ -64,11 +99,22 @@ function BingoGame() {
     setGame(newGame());
   }
 
+  // Keyed on the board so it changes with each New Board, not each tap.
+  const tagline = useMemo(
+    () => TAGLINES[Math.floor(Math.random() * TAGLINES.length)], [board]);
+
   const lines = winningLines(marked);
   const winning = new Set(lines.flat().map(([i, j]) => `${i}-${j}`));
 
-  return h('div', null,
-    h('h1', null, 'Buzzword Bingo'),
+  return h('div', { className: 'game' },
+    h('header', { className: 'masthead' },
+      h('h1', null,
+        h('span', { className: 'title-buzz' }, 'Buzzword'), ' ',
+        h('span', { className: 'title-bingo' }, 'Bingo')),
+      h('p', { className: 'tagline' }, tagline)),
+    h('div', { className: 'card' },
+    h('div', { className: 'column-letters', 'aria-hidden': true },
+      COLUMN_LETTERS.map(letter => h('span', { key: letter }, letter))),
     h('div', { className: 'bingo-board', role: 'group', 'aria-label': 'Bingo board' },
       board.map((row, i) =>
         row.map((word, j) => {
@@ -77,7 +123,7 @@ function BingoGame() {
             key: `${i}-${j}`,
             type: 'button',
             className: 'square' + (marked[i][j] ? ' selected' : '') +
-              (winning.has(`${i}-${j}`) ? ' winning' : ''),
+              (winning.has(`${i}-${j}`) ? ' winning' : '') + (free ? ' free' : ''),
             'aria-pressed': marked[i][j],
             // The FREE square is always marked, so it can't be toggled. It
             // stays focusable (unlike `disabled`) so screen readers still
@@ -88,7 +134,7 @@ function BingoGame() {
           }, word);
         })
       )
-    ),
+    )),
     h('button', {
       type: 'button',
       className: 'new-board' + (confirming ? ' confirming' : ''),
@@ -101,7 +147,9 @@ function BingoGame() {
     h('div', { id: 'message', role: 'status' },
       confirming
         ? h('span', { className: 'confirm-hint' }, 'Your marked squares will be cleared.')
-        : lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length)))
+        : lines.length > 0 && h('span', { key: lines.length, className: 'win' }, bingoMessage(lines.length))),
+    // A fresh burst for each new line.
+    lines.length > 0 && h(Confetti, { key: `confetti-${lines.length}` })
   );
 }
 
