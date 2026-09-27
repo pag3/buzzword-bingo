@@ -1,71 +1,225 @@
+/*
+ * "Office stationery" theme: off-white paper, navy ink, a yellow highlighter
+ * for marked squares and the app's green for a winning line. Everything is
+ * system fonts and CSS, so the app still works fully offline.
+ */
+:root {
+  --paper: #f7f5f0;
+  --paper-rule: rgba(30, 42, 68, 0.05);
+  --ink: #1e2a44;
+  --ink-soft: #66708a;
+  --card: #ffffff;
+  --tile: #ffffff;
+  --tile-hover: #f4f6fa;
+  --line: #d9dde6;
+  --highlight: rgba(255, 214, 51, 0.6);
+  --highlight-ink: inherit;
+  --win: #2e7d32;
+  --win-edge: #1b5e20;
+  --win-ink: #ffffff;
+  --focus: #1565c0;
+  --warn-bg: #fff3e0;
+  --warn: #bf360c;
+  --warn-border: #e65100;
+
+  --display: "Avenir Next", "Segoe UI", "Helvetica Neue", system-ui, -apple-system, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #15181e;
+    --paper-rule: rgba(255, 255, 255, 0.03);
+    --ink: #e8ebf2;
+    --ink-soft: #9aa3b5;
+    --card: #1d2129;
+    --tile: #252a33;
+    --tile-hover: #2c323d;
+    --line: #363d4a;
+    --highlight: rgba(255, 214, 51, 0.85);
+    --highlight-ink: #1e2a44;
+    --win: #66bb6a;
+    --win-edge: #a5d6a7;
+    --win-ink: #0b2e0d;
+    --focus: #90caf9;
+    --warn-bg: #3e2723;
+    --warn: #ffcc80;
+    --warn-border: #ffb74d;
+  }
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: var(--display);
   display: flex;
   flex-direction: column;
   align-items: center;
   margin: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
   /* Respect notches / rounded corners when installed on phones */
   padding: calc(20px + env(safe-area-inset-top)) 8px calc(20px + env(safe-area-inset-bottom));
-  background-color: #fff;
-  color: #222;
+  color: var(--ink);
+  background-color: var(--paper);
+  /* Faint ruled lines, like a meeting notepad */
+  background-image: linear-gradient(var(--paper-rule) 1px, transparent 1px);
+  background-size: 100% 28px;
 }
 
-#root > div {
+a {
+  color: var(--focus);
+}
+
+.game {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* ---------- Title ---------- */
+
+.masthead {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
 h1 {
-  margin-bottom: 20px;
+  margin: 0 0 8px;
   text-align: center;
 }
 
+.masthead h1 {
+  font-size: clamp(28px, 8vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+/* "Bingo" gets the highlighter treatment */
+.title-bingo {
+  padding: 0 0.12em;
+  background: linear-gradient(transparent 55%, var(--highlight) 55%, var(--highlight) 92%, transparent 92%);
+}
+
+.tagline {
+  margin: 6px 0 0;
+  font-style: italic;
+  font-size: clamp(13px, 3.6vw, 16px);
+  color: var(--ink-soft);
+}
+
+/* ---------- Board ---------- */
+
+.card {
+  /* Up to 104px squares on desktop, shrinking to fit narrow phone screens */
+  --square: min(104px, calc((100vw - 80px) / 5));
+  padding: 14px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(20, 30, 50, 0.06), 0 8px 24px rgba(20, 30, 50, 0.08);
+}
+
+.column-letters,
 .bingo-board {
-  /* 100px squares on desktop, shrinking to fit narrow phone screens */
-  --square: min(100px, calc((100vw - 36px) / 5));
   display: grid;
   grid-template-columns: repeat(5, var(--square));
+  gap: 6px;
+}
+
+.column-letters {
+  margin-bottom: 6px;
+}
+
+.column-letters span {
+  text-align: center;
+  font-weight: 800;
+  font-size: clamp(14px, 4vw, 20px);
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.bingo-board {
   grid-template-rows: repeat(5, var(--square));
-  gap: 5px;
 }
 
 .square {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  font-size: clamp(10px, 3vw, 16px);
+  font-size: clamp(9px, 2.7vw, 13px);
+  font-weight: 600;
+  /* Break long words with a hyphen where the browser can, anywhere otherwise */
+  hyphens: auto;
   overflow-wrap: anywhere;
   margin: 0;
-  padding: 2px;
-  border: 1px solid #ccc;
-  border-radius: 0;
-  background-color: transparent;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--tile);
   color: inherit;
   font-family: inherit;
   line-height: 1.2;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+@media (hover: hover) {
+  .square:not([aria-disabled="true"]):hover {
+    background-color: var(--tile-hover);
+  }
+}
+
+/* Marked squares: a quick, slightly crooked highlighter swipe */
+.square::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 24% 4%;
+  border-radius: 2px 10px 3px 12px / 2px 6px 3px 8px;
+  background: var(--highlight);
+  transform: rotate(-2deg) scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.18s ease-out;
 }
 
 .square.selected {
-  background-color: #90ee90;
+  color: var(--highlight-ink);
+}
+
+.square.selected::before {
+  transform: rotate(-2deg) scaleX(1);
+}
+
+.square:nth-child(odd).selected::before {
+  transform: rotate(1.5deg) scaleX(1);
+}
+
+/* FREE is always marked */
+.square.free {
+  font-weight: 800;
+  letter-spacing: 0.08em;
 }
 
 /* Squares in a completed row, column or diagonal */
 .square.winning {
-  background-color: #2e7d32;
-  border-color: #1b5e20;
-  color: #fff;
+  background-color: var(--win);
+  border-color: var(--win-edge);
+  color: var(--win-ink);
   animation: win-pulse 0.6s ease-out;
+}
+
+.square.winning::before {
+  opacity: 0;
 }
 
 @keyframes win-pulse {
   0% { transform: scale(1); }
-  40% { transform: scale(1.12); box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.45); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+  40% { transform: scale(1.08); box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.3); }
+  100% { transform: scale(1); }
 }
 
 .square[aria-disabled="true"] {
@@ -74,36 +228,74 @@ h1 {
 
 /* Keyboard focus ring (not shown for mouse or touch) */
 button:focus-visible {
-  outline: 3px solid #1565c0;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
+/* Phones: slimmer card chrome so the words get more of the width */
+@media (max-width: 480px) {
+  .card {
+    --square: calc((100vw - 46px) / 5);
+    padding: 6px;
+    border-radius: 10px;
+  }
+
+  .column-letters,
+  .bingo-board {
+    gap: 4px;
+  }
+
+  .square {
+    padding: 1px;
+    border-radius: 6px;
+    font-size: 2.7vw;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ---------- Controls & status ---------- */
+
 .new-board {
-  margin-top: 20px;
-  padding: 10px 20px;
+  margin-top: 22px;
+  padding: 10px 24px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--card);
+  background: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 0.12s ease;
+}
+
+@media (hover: hover) {
+  .new-board:hover {
+    opacity: 0.88;
+  }
 }
 
 /* New Board waiting for its second press */
 .new-board.confirming {
-  background-color: #fff3e0;
-  border: 2px solid #e65100;
-  border-radius: 4px;
-  color: #bf360c;
-  font-weight: bold;
+  background: var(--warn-bg);
+  border-color: var(--warn-border);
+  color: var(--warn);
 }
 
 #message .confirm-hint {
   font-size: 0.7em;
   font-weight: normal;
-  color: #bf360c;
+  color: var(--warn);
 }
 
 #message {
-  margin-top: 20px;
+  margin-top: 18px;
   min-height: 1.6em;
-  font-weight: bold;
-  font-size: 1.4em;
-  color: green;
+  font-weight: 800;
+  font-size: 1.6em;
+  text-align: center;
+  color: var(--win);
 }
 
 #message .win {
@@ -113,52 +305,57 @@ button:focus-visible {
 
 @keyframes win-pop {
   0% { transform: scale(0.4); opacity: 0; }
-  60% { transform: scale(1.25); opacity: 1; }
+  60% { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1); }
 }
 
+/* ---------- Confetti ---------- */
+
+.confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.confetti span {
+  position: absolute;
+  top: -20px;
+  left: var(--x);
+  width: 10px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--color);
+  opacity: 0;
+  animation: confetti-fall var(--duration) cubic-bezier(0.25, 0.6, 0.5, 1) var(--delay) forwards;
+}
+
+.confetti span:nth-child(3n) {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+@keyframes confetti-fall {
+  0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift), 105vh) rotate(var(--spin)); }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .square,
+  .square::before,
+  .new-board {
+    transition: none;
+  }
+
   .square.winning,
   #message .win {
     animation: none;
   }
-}
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #121212;
-    color: #eee;
-  }
-
-  .square {
-    border-color: #555;
-  }
-
-  .square.selected {
-    background-color: #2e7d32;
-  }
-
-  .square.winning {
-    background-color: #66bb6a;
-    border-color: #a5d6a7;
-    color: #0b2e0d;
-  }
-
-  #message {
-    color: #81c784;
-  }
-
-  button:focus-visible {
-    outline-color: #90caf9;
-  }
-
-  .new-board.confirming {
-    background-color: #3e2723;
-    border-color: #ffb74d;
-    color: #ffcc80;
-  }
-
-  #message .confirm-hint {
-    color: #ffcc80;
+  .confetti {
+    display: none;
   }
 }
